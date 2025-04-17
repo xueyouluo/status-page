@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>服务状态监控</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            operational: '#10b981',
+            degraded: '#f59e0b',
+            down: '#ef4444',
+            incident: '#fffbeb'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50">
+  <div class="container max-w-4xl mx-auto my-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <!-- 头部 -->
+      <header class="border-b border-gray-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <h1 class="text-2xl font-bold text-gray-800">系统状态</h1>
+        <p id="last-updated" class="text-sm text-gray-500 mt-1 sm:mt-0">上次更新: <span></span></p>
+      </header>
+
+      <div class="p-6">
+        <!-- 事件提示 -->
+        <section id="current-incidents" class="mb-8">
+          <div id="incident-banner" class="hidden bg-incident rounded-lg p-4 flex items-start">
+            <div class="mr-3 text-xl">⚠️</div>
+            <div>
+              <h2 class="font-semibold text-amber-800 mb-1">当前存在服务问题</h2>
+              <p id="incident-summary" class="text-amber-700"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 服务状态 -->
+        <section id="services-status" class="mb-8">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">服务状态</h2>
+          <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div id="status-list" class="divide-y divide-gray-200">
+              <!-- 服务状态会通过JavaScript动态加载 -->
+              <div class="py-8 text-center text-gray-500">加载中...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 可用性历史 -->
+        <section id="uptime">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">最近30天可用性</h2>
+          <div id="uptime-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 可用性信息会通过JavaScript动态加载 -->
+          </div>
+        </section>
+      </div>
+
+      <!-- 页脚 -->
+      <footer class="border-t border-gray-200 px-6 py-4 text-center text-sm text-gray-500">
+        <p class="mb-1">© 2024 服务状态监控</p>
+        <p><a href="/admin" class="text-blue-600 hover:underline">管理面板</a></p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 覆盖原来的渲染函数，使用Tailwind样式
+    function renderServiceStatus(services) {
+      const statusList = document.getElementById('status-list');
+      
+      if (services.length === 0) {
+        statusList.innerHTML = '<div class="py-8 text-center text-gray-500">暂无服务</div>';
+        return;
+      }
+      
+      let html = '';
+      
+      services.forEach(service => {
+        const status = service.status || 'unknown';
+        const statusText = getStatusText(status);
+        let statusColor;
+        
+        switch(status) {
+          case 'operational':
+            statusColor = 'text-operational';
+            break;
+          case 'degraded':
+            statusColor = 'text-degraded';
+            break;
+          case 'down':
+            statusColor = 'text-down';
+            break;
+          default:
+            statusColor = 'text-gray-400';
+        }
+        
+        html += `
+          <div class="p-4 flex justify-between items-center">
+            <div>
+              <div class="font-medium text-gray-800">${service.name}</div>
+              ${service.description ? `<div class="text-sm text-gray-500">${service.description}</div>` : ''}
+            </div>
+            <div class="flex items-center ${statusColor}">
+              <div class="w-3 h-3 rounded-full bg-current mr-2"></div>
+              <span class="font-medium">${statusText}</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      statusList.innerHTML = html;
+    }
+    
+    function renderUptimeHistory(services) {
+      const uptimeList = document.getElementById('uptime-list');
+      
+      if (services.length === 0) {
+        uptimeList.innerHTML = '';
+        return;
+      }
+      
+      const fetchHistoryPromises = services.map(service => 
+        fetch(`/api/services/${service.id}/history?days=30`)
+          .then(response => response.json())
+          .then(history => ({ service, history }))
+          .catch(error => {
+            console.error(`获取服务 ${service.name} 的历史记录失败:`, error);
+            return { service, history: [] };
+          })
+      );
+      
+      Promise.all(fetchHistoryPromises)
+        .then(results => {
+          let html = '';
+          
+          results.forEach(({ service, history }) => {
+            const uptimePercentage = calculateUptimePercentage(history);
+            const timelineHtml = generateTimelineHtml(history);
+            
+            html += `
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-3">
+                  <div class="font-medium text-gray-800">${service.name}</div>
+                  <div class="font-semibold ${uptimePercentage > 99 ? 'text-operational' : uptimePercentage > 95 ? 'text-degraded' : 'text-down'}">${uptimePercentage}% 可用</div>
+                </div>
+                <div class="flex h-6 w-full rounded overflow-hidden">
+                  ${timelineHtml}
+                </div>
+              </div>
+            `;
+          });
+          
+          uptimeList.innerHTML = html;
+        });
+    }
+    
+    function generateTimelineHtml(history) {
+      if (history.length === 0) {
+        return Array(30).fill('<div class="flex-1 mx-px bg-gray-200"></div>').join('');
+      }
+      
+      // 按天对历史记录进行分组
+      const dailyStatus = {};
+      
+      history.forEach(item => {
+        const date = new Date(item.timestamp);
+        const day = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+        
+        if (!dailyStatus[day]) {
+          dailyStatus[day] = [];
+        }
+        
+        dailyStatus[day].push(item.status);
+      });
+      
+      // 生成过去30天的日期
+      const days = [];
+      const today = new Date();
+      
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const day = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+        days.push(day);
+      }
+      
+      // 生成时间线HTML
+      return days.map(day => {
+        const statuses = dailyStatus[day] || [];
+        let bgColor = 'bg-gray-200';
+        
+        if (statuses.length > 0) {
+          if (statuses.includes('down')) {
+            bgColor = 'bg-down';
+          } else if (statuses.includes('degraded')) {
+            bgColor = 'bg-degraded';
+          } else {
+            bgColor = 'bg-operational';
+          }
+        }
+        
+        return `<div class="flex-1 mx-px ${bgColor}"></div>`;
+      }).join('');
+    }
+    
+    function renderIncidents(incidents) {
+      const incidentBanner = document.getElementById('incident-banner');
+      const incidentSummary = document.getElementById('incident-summary');
+      
+      if (incidents.length === 0) {
+        incidentBanner.classList.add('hidden');
+        return;
+      }
+      
+      const activeIncident = incidents[0]; // 显示最新事件
+      incidentSummary.textContent = `${activeIncident.service_name}: ${activeIncident.title} - ${activeIncident.description}`;
+      incidentBanner.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html> 

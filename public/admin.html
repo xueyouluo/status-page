@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>服务状态管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script>
     tailwind.config = {
       theme: {
@@ -13,48 +14,113 @@
             operational: '#10b981',
             degraded: '#f59e0b',
             down: '#ef4444',
-            incident: '#fffbeb'
+            incident: '#fffbeb',
+            dark: '#111827',
+            'dark-blue': '#1e293b',
+            'light-blue': '#e0f2fe'
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          boxShadow: {
+            'glow': '0 0 10px rgba(59, 130, 246, 0.5)',
+            'glow-green': '0 0 10px rgba(16, 185, 129, 0.5)',
+            'glow-amber': '0 0 10px rgba(245, 158, 11, 0.5)',
+            'glow-red': '0 0 10px rgba(239, 68, 68, 0.5)',
           }
         }
       }
     }
   </script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(120deg, #0f172a, #1e293b);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .admin-card {
+      transition: all 0.3s ease;
+    }
+    .admin-card:hover {
+      transform: translateY(-5px);
+    }
+    .form-input {
+      background: rgba(30, 41, 59, 0.5);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: white;
+    }
+    .form-input:focus {
+      border-color: rgba(59, 130, 246, 0.8);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    .form-input::placeholder {
+      color: rgba(156, 163, 175, 0.7);
+    }
+    .hover-scale {
+      transition: all 0.2s ease;
+    }
+    .hover-scale:hover {
+      transform: scale(1.05);
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-  <div class="container max-w-3xl mx-auto my-8 px-4 sm:px-6">
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+<body class="gradient-bg text-white min-h-screen">
+  <div class="container max-w-5xl mx-auto my-8 px-4 sm:px-6">
+    <div class="glass rounded-xl shadow-lg overflow-hidden">
       <!-- 头部 -->
-      <header class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800">服务状态管理</h1>
-        <div class="flex items-center space-x-4">
-          <a href="/" class="text-blue-600 hover:underline">返回状态页面</a>
-          <a href="/logout" class="text-red-500 hover:underline">退出登录</a>
+      <header class="border-b border-gray-700 px-8 py-6 flex justify-between items-center">
+        <div class="flex items-center">
+          <i class="fas fa-user-cog text-blue-400 mr-3 text-2xl"></i>
+          <h1 class="text-2xl font-bold text-white">服务状态管理</h1>
+        </div>
+        <div class="flex items-center space-x-6">
+          <a href="/" class="text-blue-400 hover:text-blue-300 transition-colors duration-300 flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            返回状态页面
+          </a>
+          <a href="/logout" class="text-red-400 hover:text-red-300 transition-colors duration-300 flex items-center">
+            <i class="fas fa-sign-out-alt mr-2"></i>
+            退出登录
+          </a>
         </div>
       </header>
 
-      <div class="p-6">
+      <div class="p-8">
         <!-- 添加服务表单 -->
-        <section class="mb-8">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">添加新服务</h2>
-          <form id="service-form" class="space-y-4">
+        <section class="mb-10 admin-card bg-dark-blue/40 rounded-lg border border-blue-500/20 p-6 shadow-glow">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+            <i class="fas fa-plus-circle text-blue-400 mr-2"></i>
+            添加新服务
+          </h2>
+          <form id="service-form" class="space-y-5">
             <div>
-              <label for="service-name" class="block text-sm font-medium text-gray-700 mb-1">服务名称</label>
-              <input type="text" id="service-name" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <label for="service-name" class="block text-sm font-medium text-gray-300 mb-1">服务名称</label>
+              <div class="relative">
+                <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="service-name" required
+                  class="w-full pl-10 pr-4 py-3 form-input rounded-md focus:outline-none">
+              </div>
             </div>
             <div>
-              <label for="service-url" class="block text-sm font-medium text-gray-700 mb-1">健康检查URL</label>
-              <input type="url" id="service-url" required placeholder="http://your-service/health"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <label for="service-url" class="block text-sm font-medium text-gray-300 mb-1">健康检查URL</label>
+              <div class="relative">
+                <i class="fas fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="url" id="service-url" required placeholder="http://your-service/health"
+                  class="w-full pl-10 pr-4 py-3 form-input rounded-md focus:outline-none">
+              </div>
             </div>
             <div>
-              <label for="service-description" class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+              <label for="service-description" class="block text-sm font-medium text-gray-300 mb-1">描述</label>
               <textarea id="service-description"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-y"></textarea>
+                class="w-full px-4 py-3 form-input rounded-md focus:outline-none h-24 resize-y"></textarea>
             </div>
             <div>
               <button type="submit"
-                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                class="inline-flex justify-center items-center py-3 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover-scale">
+                <i class="fas fa-plus mr-2"></i>
                 添加服务
               </button>
             </div>
@@ -62,79 +128,103 @@
         </section>
 
         <!-- 服务列表 -->
-        <section>
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">服务列表</h2>
-          <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">描述</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前状态</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                </tr>
-              </thead>
-              <tbody id="services-tbody" class="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">加载中...</td>
-                </tr>
-              </tbody>
-            </table>
+        <section class="mb-10">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+            <i class="fas fa-server text-blue-400 mr-2"></i>
+            服务列表
+          </h2>
+          <div class="bg-dark-blue/40 border border-blue-500/20 rounded-lg overflow-hidden shadow-glow">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-dark-blue/60">
+                  <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">名称</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">URL</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">描述</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">当前状态</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="services-tbody" class="divide-y divide-gray-700">
+                  <tr>
+                    <td colspan="6" class="px-4 py-4 text-center text-gray-400">
+                      <i class="fas fa-circle-notch animate-spin text-xl mb-2"></i>
+                      <p>加载中...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- 事件管理 -->
-        <section class="mt-8">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">事件管理</h2>
-          <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">服务</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标题</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">开始时间</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结束时间</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                </tr>
-              </thead>
-              <tbody id="incidents-tbody" class="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">加载中...</td>
-                </tr>
-              </tbody>
-            </table>
+        <section class="mb-10">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+            <i class="fas fa-exclamation-triangle text-blue-400 mr-2"></i>
+            事件管理
+          </h2>
+          <div class="bg-dark-blue/40 border border-blue-500/20 rounded-lg overflow-hidden shadow-glow">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-dark-blue/60">
+                  <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">服务</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">标题</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">状态</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">开始时间</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">结束时间</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="incidents-tbody" class="divide-y divide-gray-700">
+                  <tr>
+                    <td colspan="7" class="px-4 py-4 text-center text-gray-400">
+                      <i class="fas fa-circle-notch animate-spin text-xl mb-2"></i>
+                      <p>加载中...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- 订阅者管理 -->
-        <section class="mt-8">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">订阅者管理</h2>
-          <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">订阅时间</th>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                </tr>
-              </thead>
-              <tbody id="subscribers-tbody" class="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td colspan="4" class="px-4 py-4 text-center text-sm text-gray-500">加载中...</td>
-                </tr>
-              </tbody>
-            </table>
+        <section class="mb-10">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+            <i class="fas fa-envelope text-blue-400 mr-2"></i>
+            订阅者管理
+          </h2>
+          <div class="bg-dark-blue/40 border border-blue-500/20 rounded-lg overflow-hidden shadow-glow">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-dark-blue/60">
+                  <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">邮箱</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">订阅时间</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="subscribers-tbody" class="divide-y divide-gray-700">
+                  <tr>
+                    <td colspan="4" class="px-4 py-4 text-center text-gray-400">
+                      <i class="fas fa-circle-notch animate-spin text-xl mb-2"></i>
+                      <p>加载中...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </div>
 
       <!-- 页脚 -->
-      <footer class="border-t border-gray-200 px-6 py-4 text-center text-sm text-gray-500">
+      <footer class="border-t border-gray-700 px-6 py-4 text-center text-sm text-gray-400">
         <p>© 2024 服务状态监控</p>
       </footer>
     </div>
@@ -185,7 +275,7 @@
         renderServices(servicesWithStatus);
       } catch (error) {
         console.error('加载服务列表出错:', error);
-        document.getElementById('services-tbody').innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">加载服务列表出错</td></tr>';
+        document.getElementById('services-tbody').innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-sm text-gray-400">加载服务列表出错</td></tr>';
       }
     }
     
@@ -194,7 +284,7 @@
       const tbody = document.getElementById('services-tbody');
       
       if (services.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">暂无服务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-sm text-gray-400">暂无服务</td></tr>';
         return;
       }
       
@@ -203,39 +293,44 @@
       services.forEach(service => {
         const status = service.status || 'unknown';
         const statusText = getStatusText(status);
-        let statusColor;
+        let statusColor, statusIcon;
         
         switch(status) {
           case 'operational':
             statusColor = 'text-operational';
+            statusIcon = 'fa-check-circle';
             break;
           case 'degraded':
             statusColor = 'text-degraded';
+            statusIcon = 'fa-exclamation-circle';
             break;
           case 'down':
             statusColor = 'text-down';
+            statusIcon = 'fa-times-circle';
             break;
           default:
             statusColor = 'text-gray-400';
+            statusIcon = 'fa-question-circle';
         }
         
         html += `
-          <tr>
-            <td class="px-4 py-3 text-sm text-gray-500">${service.id}</td>
-            <td class="px-4 py-3 text-sm font-medium text-gray-800">${service.name}</td>
-            <td class="px-4 py-3 text-sm text-gray-500 truncate max-w-[150px]">${service.url}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">${service.description || '-'}</td>
+          <tr class="hover:bg-blue-900/20 transition-colors duration-150">
+            <td class="px-4 py-3 text-sm text-gray-400">${service.id}</td>
+            <td class="px-4 py-3 text-sm font-medium text-white">${service.name}</td>
+            <td class="px-4 py-3 text-sm text-gray-300 truncate max-w-[150px]">${service.url}</td>
+            <td class="px-4 py-3 text-sm text-gray-300">${service.description || '-'}</td>
             <td class="px-4 py-3">
               <div class="flex items-center ${statusColor}">
-                <div class="w-2.5 h-2.5 rounded-full bg-current mr-2"></div>
+                <i class="fas ${statusIcon} mr-2"></i>
                 <span class="text-sm font-medium">${statusText}</span>
               </div>
             </td>
             <td class="px-4 py-3 text-sm">
               <button 
                 onclick="deleteService(${service.id})" 
-                class="text-red-600 hover:text-red-800 focus:outline-none"
+                class="text-red-400 hover:text-red-300 transition-colors hover-scale focus:outline-none flex items-center"
               >
+                <i class="fas fa-trash-alt mr-1"></i>
                 删除
               </button>
             </td>
@@ -268,10 +363,10 @@
         // 重新加载服务列表
         loadServices();
         
-        alert('服务添加成功！');
+        showNotification('服务添加成功！', 'success');
       } catch (error) {
         console.error('添加服务出错:', error);
-        alert(`添加服务出错: ${error.message}`);
+        showNotification(`添加服务出错: ${error.message}`, 'error');
       }
     }
     
@@ -308,10 +403,10 @@
         // 重新加载服务列表
         loadServices();
         
-        alert('服务已成功删除！');
+        showNotification('服务已成功删除！', 'success');
       } catch (error) {
         console.error('删除服务出错:', error);
-        alert(`删除服务出错: ${error.message}`);
+        showNotification(`删除服务出错: ${error.message}`, 'error');
       }
     }
     
@@ -328,7 +423,7 @@
         renderIncidents(incidents);
       } catch (error) {
         console.error('加载事件列表出错:', error);
-        document.getElementById('incidents-tbody').innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">加载事件列表出错</td></tr>';
+        document.getElementById('incidents-tbody').innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-400">加载事件列表出错</td></tr>';
       }
     }
     
@@ -337,7 +432,7 @@
       const tbody = document.getElementById('incidents-tbody');
       
       if (incidents.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">暂无事件</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-400">暂无事件</td></tr>';
         return;
       }
       
@@ -345,27 +440,29 @@
       
       incidents.forEach(incident => {
         const statusColor = incident.end_time ? 'text-operational' : 'text-down';
+        const statusIcon = incident.end_time ? 'fa-check-circle' : 'fa-exclamation-triangle';
         const statusText = incident.end_time ? '已解决' : '调查中';
         const endTime = incident.end_time ? new Date(incident.end_time).toLocaleString('zh-CN') : '-';
         
         html += `
-          <tr>
-            <td class="px-4 py-3 text-sm text-gray-500">${incident.id}</td>
-            <td class="px-4 py-3 text-sm font-medium text-gray-800">${incident.service_name}</td>
-            <td class="px-4 py-3 text-sm text-gray-800">${incident.title}</td>
+          <tr class="hover:bg-blue-900/20 transition-colors duration-150">
+            <td class="px-4 py-3 text-sm text-gray-400">${incident.id}</td>
+            <td class="px-4 py-3 text-sm font-medium text-white">${incident.service_name}</td>
+            <td class="px-4 py-3 text-sm text-white">${incident.title}</td>
             <td class="px-4 py-3">
               <div class="flex items-center ${statusColor}">
-                <div class="w-2.5 h-2.5 rounded-full bg-current mr-2"></div>
+                <i class="fas ${statusIcon} mr-2"></i>
                 <span class="text-sm font-medium">${statusText}</span>
               </div>
             </td>
-            <td class="px-4 py-3 text-sm text-gray-500">${new Date(incident.start_time).toLocaleString('zh-CN')}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">${endTime}</td>
+            <td class="px-4 py-3 text-sm text-gray-300">${new Date(incident.start_time).toLocaleString('zh-CN')}</td>
+            <td class="px-4 py-3 text-sm text-gray-300">${endTime}</td>
             <td class="px-4 py-3 text-sm">
               <button 
                 onclick="deleteIncident(${incident.id})" 
-                class="text-red-600 hover:text-red-800 focus:outline-none"
+                class="text-red-400 hover:text-red-300 transition-colors hover-scale focus:outline-none flex items-center"
               >
+                <i class="fas fa-trash-alt mr-1"></i>
                 删除
               </button>
             </td>
@@ -395,13 +492,13 @@
         // 重新加载事件列表
         loadIncidents();
         
-        alert('事件已成功删除！');
+        showNotification('事件已成功删除！', 'success');
       } catch (error) {
         console.error('删除事件出错:', error);
-        alert(`删除事件出错: ${error.message}`);
+        showNotification(`删除事件出错: ${error.message}`, 'error');
       }
     }
-
+    
     // 加载订阅者列表
     async function loadSubscribers() {
       try {
@@ -415,7 +512,7 @@
         renderSubscribers(subscribers);
       } catch (error) {
         console.error('加载订阅者列表出错:', error);
-        document.getElementById('subscribers-tbody').innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-500">加载订阅者列表出错</td></tr>';
+        document.getElementById('subscribers-tbody').innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-400">加载订阅者列表出错</td></tr>';
       }
     }
     
@@ -424,7 +521,7 @@
       const tbody = document.getElementById('subscribers-tbody');
       
       if (subscribers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-500">暂无订阅者</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-400">暂无订阅者</td></tr>';
         return;
       }
       
@@ -432,15 +529,16 @@
       
       subscribers.forEach(subscriber => {
         html += `
-          <tr>
-            <td class="px-4 py-3 text-sm text-gray-500">${subscriber.id}</td>
-            <td class="px-4 py-3 text-sm font-medium text-gray-800">${subscriber.email}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">${new Date(subscriber.created_at).toLocaleString('zh-CN')}</td>
+          <tr class="hover:bg-blue-900/20 transition-colors duration-150">
+            <td class="px-4 py-3 text-sm text-gray-400">${subscriber.id}</td>
+            <td class="px-4 py-3 text-sm font-medium text-white">${subscriber.email}</td>
+            <td class="px-4 py-3 text-sm text-gray-300">${new Date(subscriber.created_at).toLocaleString('zh-CN')}</td>
             <td class="px-4 py-3 text-sm">
               <button 
                 onclick="deleteSubscriber(${subscriber.id})" 
-                class="text-red-600 hover:text-red-800 focus:outline-none"
+                class="text-red-400 hover:text-red-300 transition-colors hover-scale focus:outline-none flex items-center"
               >
+                <i class="fas fa-trash-alt mr-1"></i>
                 删除
               </button>
             </td>
@@ -470,11 +568,50 @@
         // 重新加载订阅者列表
         loadSubscribers();
         
-        alert('订阅者已成功删除！');
+        showNotification('订阅者已成功删除！', 'success');
       } catch (error) {
         console.error('删除订阅者出错:', error);
-        alert(`删除订阅者出错: ${error.message}`);
+        showNotification(`删除订阅者出错: ${error.message}`, 'error');
       }
+    }
+    
+    // 显示通知
+    function showNotification(message, type = 'info') {
+      // 创建通知元素
+      const notification = document.createElement('div');
+      notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 flex items-center ${
+        type === 'success' ? 'bg-green-500/80' : type === 'error' ? 'bg-red-500/80' : 'bg-blue-500/80'
+      } backdrop-blur-sm`;
+      
+      // 添加图标
+      const icon = document.createElement('i');
+      icon.className = `fas ${
+        type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
+      } mr-3 text-white`;
+      notification.appendChild(icon);
+      
+      // 添加消息文本
+      const text = document.createElement('span');
+      text.className = 'text-white';
+      text.textContent = message;
+      notification.appendChild(text);
+      
+      // 添加到页面
+      document.body.appendChild(notification);
+      
+      // 淡入效果
+      setTimeout(() => {
+        notification.style.opacity = '1';
+      }, 10);
+      
+      // 3秒后淡出并移除
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 500);
+      }, 3000);
     }
   </script>
 </body>

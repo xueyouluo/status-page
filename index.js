@@ -129,8 +129,8 @@ function logStatus(statusData) {
   );
 }
 
-// 定时检查所有服务的健康状态
-cron.schedule('*/5 * * * *', () => {
+// 定时检查所有服务的健康状态（每30秒）
+cron.schedule('*/30 * * * * *', () => {
   console.log('运行健康检查...');
   db.all("SELECT * FROM services", async (err, services) => {
     if (err) {
@@ -143,6 +143,21 @@ cron.schedule('*/5 * * * *', () => {
       logStatus(statusData);
     }
   });
+});
+
+// 每天清理一次超过7天的状态日志
+cron.schedule('0 0 * * *', () => {
+  console.log('清理旧状态日志...');
+  db.run(
+    "DELETE FROM status_logs WHERE timestamp < datetime('now', '-7 days')",
+    (err) => {
+      if (err) {
+        console.error('清理旧状态日志出错:', err);
+      } else {
+        console.log('旧状态日志清理完成');
+      }
+    }
+  );
 });
 
 // API路由
@@ -209,6 +224,38 @@ app.get('/api/incidents', (req, res) => {
   });
 });
 
+// 获取所有事件（用于管理页面）
+app.get('/api/incidents/all', requireAuth, (req, res) => {
+  db.all(`
+    SELECT i.*, s.name as service_name
+    FROM incidents i
+    JOIN services s ON i.service_id = s.id
+    ORDER BY i.start_time DESC
+  `, (err, incidents) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(incidents);
+  });
+});
+
+// 删除事件
+app.delete('/api/incidents/:id', requireAuth, (req, res) => {
+  const incidentId = req.params.id;
+  
+  db.run("DELETE FROM incidents WHERE id = ?", [incidentId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: '事件不存在' });
+    }
+    
+    res.json({ success: true, message: '事件已成功删除' });
+  });
+});
+
 // 管理服务
 app.post('/api/services', requireAuth, (req, res) => {
   const { name, url, description } = req.body;
@@ -228,6 +275,35 @@ app.post('/api/services', requireAuth, (req, res) => {
       res.status(201).json({ id: this.lastID, name, url, description });
     }
   );
+});
+
+// 删除服务
+app.delete('/api/services/:id', requireAuth, (req, res) => {
+  const serviceId = req.params.id;
+  
+  db.run("DELETE FROM status_logs WHERE service_id = ?", [serviceId], (err) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    db.run("DELETE FROM incidents WHERE service_id = ?", [serviceId], (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      db.run("DELETE FROM services WHERE id = ?", [serviceId], function(err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        
+        if (this.changes === 0) {
+          return res.status(404).json({ error: '服务不存在' });
+        }
+        
+        res.json({ success: true, message: '服务已成功删除' });
+      });
+    });
+  });
 });
 
 // 前端路由

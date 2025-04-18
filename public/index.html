@@ -54,7 +54,7 @@
 
         <!-- 可用性历史 -->
         <section id="uptime">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">最近30天可用性</h2>
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">最近7天可用性</h2>
           <div id="uptime-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- 可用性信息会通过JavaScript动态加载 -->
           </div>
@@ -127,7 +127,7 @@
       }
       
       const fetchHistoryPromises = services.map(service => 
-        fetch(`/api/services/${service.id}/history?days=30`)
+        fetch(`/api/services/${service.id}/history?days=7`)
           .then(response => response.json())
           .then(history => ({ service, history }))
           .catch(error => {
@@ -163,7 +163,7 @@
     
     function generateTimelineHtml(history) {
       if (history.length === 0) {
-        return Array(30).fill('<div class="flex-1 mx-px bg-gray-200"></div>').join('');
+        return Array(7).fill('<div class="flex-1 mx-px bg-gray-200"></div>').join('');
       }
       
       // 按天对历史记录进行分组
@@ -180,11 +180,11 @@
         dailyStatus[day].push(item.status);
       });
       
-      // 生成过去30天的日期
+      // 生成过去7天的日期
       const days = [];
       const today = new Date();
       
-      for (let i = 29; i >= 0; i--) {
+      for (let i = 6; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
         const day = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;

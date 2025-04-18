@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
   loadServiceStatus();
   loadIncidents();
   
-  // 每60秒刷新一次数据
+  // 每30秒刷新一次数据
   setInterval(() => {
     updateLastUpdated();
     loadServiceStatus();
     loadIncidents();
-  }, 60000);
+  }, 30000);
 });
 
 // 更新"上次更新"时间
@@ -93,7 +93,7 @@ function renderUptimeHistory(services) {
   }
   
   const fetchHistoryPromises = services.map(service => 
-    fetch(`/api/services/${service.id}/history?days=30`)
+    fetch(`/api/services/${service.id}/history?days=7`)
       .then(response => response.json())
       .then(history => ({ service, history }))
       .catch(error => {
@@ -156,7 +156,7 @@ function calculateUptimePercentage(history) {
 // 生成时间线HTML
 function generateTimelineHtml(history) {
   if (history.length === 0) {
-    return Array(30).fill('<div class="uptime-day uptime-unknown"></div>').join('');
+    return Array(7).fill('<div class="uptime-day uptime-unknown"></div>').join('');
   }
   
   // 按天对历史记录进行分组
@@ -173,11 +173,11 @@ function generateTimelineHtml(history) {
     dailyStatus[day].push(item.status);
   });
   
-  // 生成过去30天的日期
+  // 生成过去7天的日期
   const days = [];
   const today = new Date();
   
-  for (let i = 29; i >= 0; i--) {
+  for (let i = 6; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     const day = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;

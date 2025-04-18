@@ -59,6 +59,30 @@
             <!-- 可用性信息会通过JavaScript动态加载 -->
           </div>
         </section>
+        
+        <!-- 订阅通知 -->
+        <section class="mt-8">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">订阅服务状态通知</h2>
+          <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <p class="text-gray-600 mb-4">当服务发生异常时，我们会通过邮件通知您。请输入您的邮箱地址订阅通知。</p>
+            <form id="subscribe-form" class="sm:flex">
+              <input 
+                type="email" 
+                id="subscribe-email" 
+                placeholder="您的邮箱地址" 
+                required
+                class="w-full sm:w-auto flex-1 px-4 py-2 border border-gray-300 rounded-md sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+              <button 
+                type="submit"
+                class="w-full sm:w-auto mt-3 sm:mt-0 inline-flex justify-center py-2 px-4 border border-transparent sm:rounded-l-none rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                订阅
+              </button>
+            </form>
+            <p id="subscribe-message" class="mt-3 text-sm"></p>
+          </div>
+        </section>
       </div>
 
       <!-- 页脚 -->
@@ -71,6 +95,69 @@
 
   <script src="js/main.js"></script>
   <script>
+    // 处理URL参数
+    function getUrlParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split('&');
+      
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        
+        if (key) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+        }
+      }
+      
+      return params;
+    }
+    
+    // 检查URL消息参数
+    const params = getUrlParams();
+    if (params.message) {
+      document.getElementById('subscribe-message').textContent = params.message;
+      document.getElementById('subscribe-message').classList.add('text-green-600');
+    } else if (params.error) {
+      document.getElementById('subscribe-message').textContent = params.error;
+      document.getElementById('subscribe-message').classList.add('text-red-600');
+    }
+    
+    // 处理订阅表单提交
+    document.getElementById('subscribe-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('subscribe-email').value;
+      const messageElement = document.getElementById('subscribe-message');
+      
+      try {
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          messageElement.textContent = '订阅成功！当服务状态发生变化时，您将收到通知。';
+          messageElement.classList.remove('text-red-600');
+          messageElement.classList.add('text-green-600');
+          document.getElementById('subscribe-email').value = '';
+        } else {
+          messageElement.textContent = data.error || data.message || '订阅失败，请稍后重试。';
+          messageElement.classList.remove('text-green-600');
+          messageElement.classList.add('text-red-600');
+        }
+      } catch (error) {
+        console.error('订阅出错:', error);
+        messageElement.textContent = '订阅失败，请稍后重试。';
+        messageElement.classList.remove('text-green-600');
+        messageElement.classList.add('text-red-600');
+      }
+    });
+    
     // 覆盖原来的渲染函数，使用Tailwind样式
     function renderServiceStatus(services) {
       const statusList = document.getElementById('status-list');
